@@ -1,6 +1,7 @@
 # planning_agent.py
 import asyncio
 import json
+import time
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, asdict
 from enum import Enum
@@ -123,6 +124,8 @@ class PlanningAgent:
         Respond with valid JSON only.
         """
         
+        from llm_manager import LLMRequest  # Import here to avoid circular imports
+        
         request = LLMRequest(
             prompt=extraction_prompt,
             model="gpt-4o",
@@ -169,6 +172,8 @@ class PlanningAgent:
         }}
         """
         
+        from llm_manager import LLMRequest
+        
         request = LLMRequest(
             prompt=analysis_prompt,
             model="gpt-4o",
@@ -190,6 +195,17 @@ class PlanningAgent:
                 "security_level": "standard",
                 "recommended_patterns": ["microservices", "event_driven"]
             }
+    
+    def _select_architecture_pattern(self, app_analysis: Dict[str, Any]) -> Dict[str, Any]:
+        """Select appropriate architecture pattern based on analysis"""
+        complexity = app_analysis.get("complexity", "medium")
+        
+        if complexity in ["low"]:
+            return self.architecture_patterns["simple_web_app"]
+        elif complexity in ["high", "very_high"]:
+            return self.architecture_patterns["microservices_app"]
+        else:
+            return self.architecture_patterns["serverless_app"]
     
     async def _generate_component_specs(self, requirements: Dict[str, Any], pattern: Dict[str, Any]) -> List[ComponentSpec]:
         """Generate detailed component specifications"""
@@ -307,177 +323,26 @@ class PlanningAgent:
         else:
             return "fastapi"
     
-    def _load_planning_templates(self) -> Dict[str, str]:
-        """Load planning prompt templates"""
-        return {
-            "requirement_extraction": """
-            Extract structured requirements from: {user_input}
-            Focus on: functionality, data needs, user types, performance, security
-            """,
-            "architecture_analysis": """
-            Analyze application requirements and recommend:
-            - Architecture patterns
-            - Technology stack
-            - Deployment strategy
-            - Scalability approach
-            """,
-            "component_breakdown": """
-            Break down application into components:
-            - Frontend requirements
-            - Backend services
-            - Data storage needs
-            - Authentication requirements
-            - Integration points
-            """
-        }
+    def _select_database_type(self, requirements: Dict[str, Any], pattern: Dict[str, Any]) -> str:
+        """Select appropriate database type"""
+        data_complexity = pattern.get("data_complexity", "moderate")
+        
+        if data_complexity == "complex":
+            return "postgresql"
+        elif data_complexity == "simple":
+            return "firestore"
+        else:
+            return "postgresql"
     
-    def _load_architecture_patterns(self) -> Dict[str, Dict]:
-        """Load predefined architecture patterns"""
-        return {
-            "simple_web_app": {
-                "components": ["frontend", "backend", "database"],
-                "patterns": ["mvc", "rest_api"],
-                "deployment": "cloud_run",
-                "complexity": "low"
-            },
-            "microservices_app": {
-                "components": ["frontend", "api_gateway", "services", "database", "auth"],
-                "patterns": ["microservices", "event_driven", "cqrs"],
-                "deployment": "gke",
-                "complexity": "high"
-            },
-            "serverless_app": {
-                "components": ["frontend", "functions", "database", "auth"],
-                "patterns": ["serverless", "event_driven"],
-                "deployment": "cloud_functions",
-                "complexity": "medium"
-            }
-        }
-
-class TaskExecutionEngine:
-    """Execute planned tasks with monitoring and error handling"""
+    def _select_auth_framework(self, pattern: Dict[str, Any]) -> str:
+        """Select appropriate authentication framework"""
+        security_level = pattern.get("security_level", "standard")
+        
+        if security_level in ["high", "enterprise"]:
+            return "firebase_auth"
+        else:
+            return "jwt"
     
-    def __init__(self, llm_manager, performance_monitor):
-        self.llm_manager = llm_manager
-        self.performance_monitor = performance_monitor
-        self.active_tasks: Dict[str, Dict] = {}
-        self.task_history: List[Dict] = []
-        self.logger = logging.getLogger(__name__)
-    
-    async def execute_architecture_plan(self, architecture: ApplicationArchitecture) -> Dict[str, Any]:
-        """Execute the complete architecture plan"""
-        
-        execution_result = {
-            "app_id": architecture.app_id,
-            "status": "in_progress",
-            "start_time": time.time(),
-            "component_results": {},
-            "integration_result": None,
-            "deployment_result": None,
-            "errors": [],
-            "metrics": {}
-        }
-        
-        try:
-            # Step 1: Execute component generation in dependency order
-            sorted_components = self._sort_components_by_dependency(architecture.components)
+    def _generate_endpoint_specs(self, requirements: Dict[str, Any]) -> List[str]:
+        """Generate
             
-            for component in sorted_components:
-                component_result = await self._execute_component_generation(component)
-                execution_result["component_results"][component.component_id] = component_result
-                
-                if not component_result["success"]:
-                    execution_result["errors"].append(f"Component {component.component_id} failed")
-            
-            # Step 2: Execute integration if all components succeeded
-            if all(result["success"] for result in execution_result["component_results"].values()):
-                integration_result = await self._execute_integration(architecture, execution_result["component_results"])
-                execution_result["integration_result"] = integration_result
-                
-                # Step 3: Execute deployment if integration succeeded
-                if integration_result["success"]:
-                    deployment_result = await self._execute_deployment(architecture, integration_result)
-                    execution_result["deployment_result"] = deployment_result
-                    
-                    execution_result["status"] = "completed" if deployment_result["success"] else "failed"
-                else:
-                    execution_result["status"] = "failed"
-                    execution_result["errors"].append("Integration failed")
-            else:
-                execution_result["status"] = "failed"
-                execution_result["errors"].append("Component generation failed")
-            
-            # Record execution metrics
-            execution_time = time.time() - execution_result["start_time"]
-            execution_result["metrics"]["total_execution_time"] = execution_time
-            
-            self.performance_monitor.record_metric(
-                "application_generation_time",
-                execution_time,
-                "seconds",
-                {
-                    "component_count": len(architecture.components),
-                    "complexity": architecture.components[0].estimated_complexity if architecture.components else "medium"
-                }
-            )
-            
-        except Exception as e:
-            execution_result["status"] = "failed"
-            execution_result["errors"].append(str(e))
-            self.logger.error(f"Architecture execution failed: {str(e)}")
-        
-        return execution_result
-    
-    async def _execute_component_generation(self, component: ComponentSpec) -> Dict[str, Any]:
-        """Execute generation of a single component"""
-        
-        start_time = time.time()
-        
-        try:
-            # Create generation request based on component type
-            if component.component_type == "frontend":
-                result = await self._generate_frontend_component(component)
-            elif component.component_type == "backend":
-                result = await self._generate_backend_component(component)
-            elif component.component_type == "database":
-                result = await self._generate_database_component(component)
-            elif component.component_type == "auth":
-                result = await self._generate_auth_component(component)
-            else:
-                raise ValueError(f"Unknown component type: {component.component_type}")
-            
-            generation_time = time.time() - start_time
-            
-            self.performance_monitor.record_metric(
-                "module_generation_time",
-                generation_time,
-                "seconds",
-                {
-                    "module_type": component.component_type,
-                    "framework": component.framework,
-                    "complexity": component.estimated_complexity
-                }
-            )
-            
-            return {
-                "success": True,
-                "component_id": component.component_id,
-                "generation_time": generation_time,
-                "files": result.get("files", {}),
-                "dependencies": result.get("dependencies", []),
-                "config": result.get("config", {})
-            }
-            
-        except Exception as e:
-            self.logger.error(f"Component generation failed for {component.component_id}: {str(e)}")
-            return {
-                "success": False,
-                "component_id": component.component_id,
-                "error": str(e),
-                "generation_time": time.time() - start_time
-            }
-    
-    async def _generate_frontend_component(self, component: ComponentSpec) -> Dict[str, Any]:
-        """Generate frontend component using LLM"""
-        
-      
