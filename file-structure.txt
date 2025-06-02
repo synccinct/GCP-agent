@@ -1,0 +1,274 @@
+gcp-ai-agent-system/
+├── README.md
+├── requirements.txt
+├── pyproject.toml
+├── Dockerfile
+├── docker-compose.yml
+├── .env.example
+├── .gitignore
+├── cloudbuild.yaml
+├── terraform/
+│   ├── main.tf
+│   ├── variables.tf
+│   ├── outputs.tf
+│   └── modules/
+│       ├── gcp-services/
+│       ├── networking/
+│       └── security/
+├── app/
+│   ├── __init__.py
+│   ├── main.py
+│   ├── config/
+│   │   ├── __init__.py
+│   │   ├── settings.py
+│   │   ├── logging.py
+│   │   └── gcp_config.py
+│   ├── core/
+│   │   ├── __init__.py
+│   │   ├── planning_agent.py
+│   │   ├── task_execution_engine.py
+│   │   ├── chain_of_thought_verifier.py
+│   │   ├── react_agent.py
+│   │   └── observability_manager.py
+│   ├── data_flow/
+│   │   ├── __init__.py
+│   │   ├── data_flow_manager.py
+│   │   ├── requirement_ingestion_flow.py
+│   │   ├── code_generation_flow.py
+│   │   ├── integration_flow.py
+│   │   └── deployment_flow.py
+│   ├── state_management/
+│   │   ├── __init__.py
+│   │   ├── amem_state_manager.py
+│   │   ├── firestore_vector_store.py
+│   │   ├── git_version_control.py
+│   │   └── event_driven_updater.py
+│   ├── interfaces/
+│   │   ├── __init__.py
+│   │   ├── interface_specifications.py
+│   │   ├── synchronous_api_manager.py
+│   │   ├── asynchronous_event_manager.py
+│   │   ├── jwt_authentication_manager.py
+│   │   ├── user_input_interface.py
+│   │   ├── code_repository_integration.py
+│   │   ├── gcp_service_integration.py
+│   │   └── cicd_integration.py
+│   ├── error_handling/
+│   │   ├── __init__.py
+│   │   ├── error_handling_systems.py
+│   │   ├── error_classification_taxonomy.py
+│   │   ├── circuit_breaker.py
+│   │   ├── retry_with_backoff.py
+│   │   ├── fallback_mechanisms.py
+│   │   ├── checkpoint_and_resume.py
+│   │   ├── error_recovery_framework.py
+│   │   └── structured_error_logger.py
+│   ├── llm_integration/
+│   │   ├── __init__.py
+│   │   ├── llm_manager.py
+│   │   ├── providers/
+│   │   │   ├── __init__.py
+│   │   │   ├── openai_provider.py
+│   │   │   ├── anthropic_provider.py
+│   │   │   ├── google_provider.py
+│   │   │   └── custom_provider.py
+│   │   ├── rate_limiter.py
+│   │   └── model_evaluator.py
+│   ├── module_generators/
+│   │   ├── __init__.py
+│   │   ├── base_generator.py
+│   │   ├── frontend_generator.py
+│   │   ├── backend_generator.py
+│   │   ├── database_generator.py
+│   │   ├── auth_generator.py
+│   │   └── templates/
+│   │       ├── react/
+│   │       ├── vue/
+│   │       ├── angular/
+│   │       ├── fastapi/
+│   │       ├── express/
+│   │       ├── firestore/
+│   │       └── cloud_sql/
+│   ├── integration/
+│   │   ├── __init__.py
+│   │   ├── module_integrator.py
+│   │   ├── compatibility_checker.py
+│   │   ├── adapter_generator.py
+│   │   └── integration_patterns/
+│   │       ├── microservices.py
+│   │       ├── cqrs.py
+│   │       ├── event_driven.py
+│   │       └── bff.py
+│   ├── deployment/
+│   │   ├── __init__.py
+│   │   ├── deployment_manager.py
+│   │   ├── cloud_run_deployer.py
+│   │   ├── app_engine_deployer.py
+│   │   ├── gke_deployer.py
+│   │   └── terraform_generator.py
+│   ├── performance/
+│   │   ├── __init__.py
+│   │   ├── performance_monitor.py
+│   │   ├── metrics_collector.py
+│   │   ├── code_quality_analyzer.py
+│   │   ├── integration_test_framework.py
+│   │   └── performance_test_suite.py
+│   ├── gcp_services/
+│   │   ├── __init__.py
+│   │   ├── gcp_services_setup.py
+│   │   ├── firestore_client.py
+│   │   ├── cloud_storage_client.py
+│   │   ├── pubsub_client.py
+│   │   ├── secret_manager_client.py
+│   │   ├── cloud_build_client.py
+│   │   └── monitoring_client.py
+│   ├── api/
+│   │   ├── __init__.py
+│   │   ├── v1/
+│   │   │   ├── __init__.py
+│   │   │   ├── routes/
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── generation.py
+│   │   │   │   ├── integration.py
+│   │   │   │   ├── deployment.py
+│   │   │   │   └── monitoring.py
+│   │   │   ├── models/
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── request_models.py
+│   │   │   │   ├── response_models.py
+│   │   │   │   └── error_models.py
+│   │   │   └── middleware/
+│   │   │       ├── __init__.py
+│   │   │       ├── authentication.py
+│   │   │       ├── rate_limiting.py
+│   │   │       └── error_handling.py
+│   │   └── websockets/
+│   │       ├── __init__.py
+│   │       ├── connection_manager.py
+│   │       └── event_handlers.py
+│   ├── ui/
+│   │   ├── __init__.py
+│   │   ├── static/
+│   │   │   ├── css/
+│   │   │   ├── js/
+│   │   │   └── images/
+│   │   ├── templates/
+│   │   │   ├── base.html
+│   │   │   ├── dashboard.html
+│   │   │   ├── requirements_form.html
+│   │   │   └── generation_status.html
+│   │   └── components/
+│   │       ├── __init__.py
+│   │       ├── forms.py
+│   │       └── widgets.py
+│   └── utils/
+│       ├── __init__.py
+│       ├── helpers.py
+│       ├── validators.py
+│       ├── formatters.py
+│       └── constants.py
+├── tests/
+│   ├── __init__.py
+│   ├── conftest.py
+│   ├── unit/
+│   │   ├── __init__.py
+│   │   ├── test_planning_agent.py
+│   │   ├── test_module_generators.py
+│   │   ├── test_integration.py
+│   │   ├── test_deployment.py
+│   │   ├── test_error_handling.py
+│   │   └── test_llm_integration.py
+│   ├── integration/
+│   │   ├── __init__.py
+│   │   ├── test_end_to_end.py
+│   │   ├── test_data_flow.py
+│   │   ├── test_state_management.py
+│   │   └── test_gcp_services.py
+│   ├── performance/
+│   │   ├── __init__.py
+│   │   ├── test_load.py
+│   │   ├── test_stress.py
+│   │   └── test_benchmarks.py
+│   └── fixtures/
+│       ├── __init__.py
+│       ├── sample_requirements.json
+│       ├── sample_modules.json
+│       └── test_data.py
+├── scripts/
+│   ├── setup.sh
+│   ├── deploy.sh
+│   ├── test.sh
+│   ├── backup.sh
+│   ├── migrate.sh
+│   └── monitoring_setup.sh
+├── docs/
+│   ├── README.md
+│   ├── architecture.md
+│   ├── api_documentation.md
+│   ├── deployment_guide.md
+│   ├── troubleshooting.md
+│   ├── performance_tuning.md
+│   └── examples/
+│       ├── basic_usage.md
+│       ├── advanced_patterns.md
+│       └── custom_modules.md
+├── monitoring/
+│   ├── dashboards/
+│   │   ├── agent_performance.json
+│   │   ├── system_health.json
+│   │   └── error_tracking.json
+│   ├── alerts/
+│   │   ├── error_rate.yaml
+│   │   ├── latency.yaml
+│   │   └── resource_usage.yaml
+│   └── logs/
+│       ├── log_config.yaml
+│       └── log_filters.json
+├── deployment/
+│   ├── kubernetes/
+│   │   ├── namespace.yaml
+│   │   ├── deployment.yaml
+│   │   ├── service.yaml
+│   │   ├── ingress.yaml
+│   │   ├── configmap.yaml
+│   │   └── secrets.yaml
+│   ├── cloud_run/
+│   │   ├── service.yaml
+│   │   └── traffic.yaml
+│   ├── app_engine/
+│   │   ├── app.yaml
+│   │   ├── cron.yaml
+│   │   └── dispatch.yaml
+│   └── helm/
+│       ├── Chart.yaml
+│       ├── values.yaml
+│       └── templates/
+├── data/
+│   ├── schemas/
+│   │   ├── application_state.json
+│   │   ├── module_specification.json
+│   │   ├── integration_config.json
+│   │   └── deployment_config.json
+│   ├── templates/
+│   │   ├── project_templates/
+│   │   ├── module_templates/
+│   │   └── integration_templates/
+│   └── examples/
+│       ├── sample_applications/
+│       └── reference_implementations/
+├── migrations/
+│   ├── firestore/
+│   │   ├── 001_initial_collections.py
+│   │   ├── 002_add_vector_support.py
+│   │   └── 003_performance_indexes.py
+│   └── cloud_sql/
+│       ├── 001_initial_schema.sql
+│       ├── 002_add_metrics_tables.sql
+│       └── 003_add_error_tracking.sql
+└── tools/
+    ├── __init__.py
+    ├── project_generator.py
+    ├── module_validator.py
+    ├── performance_analyzer.py
+    ├── deployment_checker.py
+    └── backup_manager.py
